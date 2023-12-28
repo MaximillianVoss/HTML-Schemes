@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  overflow: auto;
+}
+
+.customTextbox {
+  position: absolute;
+  border: 2px solid #ccc;
+  overflow: auto;
+  cursor: grab;
+  resize: both;
+  /* Добавлено свойство для изменения размеров */
+}
+
+.customCircle {
+  position: absolute;
+  background-color: black; /* Или любой другой заметный цвет */
+  border: 1px solid black; /* Добавляем видимую границу */
+  z-index: 1000;
+}
