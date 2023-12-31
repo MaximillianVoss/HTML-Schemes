@@ -10,6 +10,8 @@ export class Circle extends DrawItem {
 
     // Метод для отрисовки окружности
     draw() {
+        if ( document.getElementById( this.id ) )
+            return;
         // Создаем элемент div
         const customCircle = document.createElement( 'div' );
         customCircle.className = 'customCircle';

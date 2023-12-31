@@ -3,12 +3,17 @@ body {
   overflow: auto;
 }
 
+canvas {
+  z-index: 1000;
+}
+
 .customTextbox {
   position: absolute;
   border: 2px solid #ccc;
   overflow: auto;
   cursor: grab;
   resize: both;
+  z-index: 998;
   /* Добавлено свойство для изменения размеров */
 }
 
@@ -16,5 +21,5 @@ body {
   position: absolute;
   background-color: black; /* Или любой другой заметный цвет */
   border: 1px solid black; /* Добавляем видимую границу */
-  z-index: 1000;
+  z-index: 999;
 }

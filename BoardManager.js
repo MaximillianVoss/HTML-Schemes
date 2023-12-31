@@ -6,10 +6,17 @@ import { Point } from './Point.js';
 
 export class BoardManager {
     constructor( canvasElement ) {
+        this.isDebug = true;
         this.canvas = canvasElement;
         this.items = [];
         this.nextId = 1;
     }
+
+    printToLog( ...args ) {
+        if ( this.isDebug )
+            console.log( ...args );
+    }
+
 
     //#region Геттеры
 
@@ -73,6 +80,90 @@ export class BoardManager {
         }
     }
     //#endregion
+
+    //#region Поддержка перетаскивания
+
+    enableDragging() {
+        let selectedElement = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        const onMouseDown = ( e ) => {
+            this.printToLog( 'MouseDown on element:', e );
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Находим элемент, который мы хотим перетаскивать
+            selectedElement = this.items.find( item => item.containsPoint( x, y ) );
+            if ( selectedElement ) {
+                this.printToLog( "onMouseDown selected element:" );
+                this.printToLog( selectedElement );
+                offsetX = x - selectedElement.coordinates[ 0 ].getX();
+                offsetY = y - selectedElement.coordinates[ 0 ].getY();
+                //this.canvas.addEventListener( 'mousemove', onMouseMove );
+            }
+        };
+
+        const onMouseMove = ( e ) => {
+            this.printToLog( 'MouseMove on element:', e );
+            // const x = e.clientX - rect.left;
+            // const y = e.clientY - rect.top;
+            // var underElement = this.items.find( item => item.containsPoint( x, y ) );
+            // this.printToLog( underElement );
+            this.printToLog( selectedElement );
+            if ( selectedElement ) {
+                this.printToLog( "onMouseMove selected element:" );
+                this.printToLog( selectedElement );
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Обновляем координаты элемента и всех его дочерних элементов
+                selectedElement.setCoordinates( x - offsetX, y - offsetY );
+                selectedElement.children.forEach( child => {
+                    child.setCoordinates( x - offsetX, y - offsetY );
+                } );
+                //this.enableDragging();
+                this.redrawAll();
+            }
+        };
+
+        const onMouseLeave = ( e ) => {
+            this.printToLog( 'MouseLeave on element:', e );
+        };
+
+        const onMouseUp = ( e ) => {
+            this.printToLog( 'MouseUp on element:', e );
+            //selectedElement = null;
+            this.canvas.removeEventListener( 'mousemove', onMouseMove );
+            // Также нужно удалить с каждого элемента, если они имеют свои обработчики
+            this.items.forEach( item => {
+                const element = document.getElementById( item.id );
+                if ( element ) {
+                    element.removeEventListener( 'mousemove', onMouseMove );
+                }
+            } );
+        };
+
+
+        //this.canvas.addEventListener( 'mousedown', onMouseDown );
+        //this.canvas.addEventListener( 'mouseup', onMouseUp );
+        //this.canvas.addEventListener( 'mouseleave', onMouseUp );
+        //document.body.addEventListener( 'mousemove', onMouseMove );
+        // this.items.forEach( item => {
+        //     var element = document.getElementById( item.id ); // предполагаем, что у каждого элемента есть уникальный id
+        //     if ( element && item instanceof Rectangle ) {
+        //         this.printToLog( 'Add listener on element:', item.id );
+        //         element.addEventListener( 'mouseup', onMouseUp );
+        //         element.addEventListener( 'mousedown', onMouseDown );
+        //         element.addEventListener( 'mouseleave', onMouseLeave );
+        //         //element.addEventListener( 'mousemove', onMouseMove );
+        //     }
+        // } );
+    }
+    //#endregion
+
 
     generateUniqueId() {
         return 'DrawItem_' + this.nextId++;
@@ -157,6 +248,15 @@ export class BoardManager {
             console.error( "Canvas element not found!" );
             return;
         }
+
+        // Удаление старых DOM-элементов
+        this.items.forEach( item => {
+            const existingElement = document.getElementById( item.id );
+            if ( existingElement ) {
+                //this.printToLog( "delete:", existingElement );
+                existingElement.parentNode.removeChild( existingElement );
+            }
+        } );
 
         const context = this.canvas.getContext( '2d' );
         context.clearRect( 0, 0, this.canvas.width, this.canvas.height );

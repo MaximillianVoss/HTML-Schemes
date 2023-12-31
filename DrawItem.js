@@ -21,6 +21,32 @@ export class DrawItem {
         }
     }
 
+    printToLog( ...args ) {
+        if ( this.isDebug )
+            console.log( ...args );
+    }
+
+    getX() {
+        if ( !this.coordinates || this.coordinates.length == 0 )
+            return null;
+        return this.coordinates[ 0 ].getX();
+    }
+    getY() {
+        if ( !this.coordinates || this.coordinates.length == 0 )
+            return null;
+        return this.coordinates[ 0 ].getY();
+    }
+
+    setX( x ) {
+        if ( this.coordinates && this.coordinates.length > 0 )
+            this.coordinates[ 0 ].setX( x );
+    }
+
+    setY( y ) {
+        if ( this.coordinates && this.coordinates.length > 0 )
+            this.coordinates[ 0 ].setY( y );
+    }
+
     // Метод для добавления дочернего элемента
     addChild( child ) {
         this.children.push( child );
@@ -45,6 +71,26 @@ export class DrawItem {
         console.log( 'Drawing an item with id: ' + this.id );
         this.coordinates.forEach( ( coord, index ) => {
             console.log( `Coordinate ${index}: x=${coord.getX()}, y=${coord.getY()}` );
+        } );
+    }
+
+    // Метод для проверки, содержит ли элемент точку
+    containsPoint( x, y ) {
+        return (
+            x >= this.coordinates[ 0 ].getX() &&
+            x <= this.coordinates[ 0 ].getX() + this.width &&
+            y >= this.coordinates[ 0 ].getY() &&
+            y <= this.coordinates[ 0 ].getY() + this.height
+        );
+    }
+
+    // Метод для установки новых координат элемента
+    setCoordinates( newX, newY ) {
+        const deltaX = newX - this.coordinates[ 0 ].getX();
+        const deltaY = newY - this.coordinates[ 0 ].getY();
+        this.coordinates.forEach( coord => {
+            coord.setX( coord.getX() + deltaX );
+            coord.setY( coord.getY() + deltaY );
         } );
     }
 }
