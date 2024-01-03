@@ -8,7 +8,6 @@ export class Rectangle extends DrawItem {
         this.dragging = false; // Состояние перетаскивания
         this.offsetX = 0; // Смещение X
         this.offsetY = 0; // Смещение Y
-        this.isDebug = true;
     }
 
     onMouseDown( e ) {
@@ -117,12 +116,9 @@ export class Rectangle extends DrawItem {
         this.children.forEach( child => {
             if ( child instanceof DrawItem ) {
                 const childElement = document.getElementById( child.id.toString() );
-                this.printToLog( "updateChildrenPosition" );
                 if ( childElement ) {
-                    //this.printToLog( "childElement, child.coordinates[ 0 ].getX(), child.coordinates[ 0 ].getY()" );
-                    //this.printToLog( childElement, child.getX(), child.getY() );
-                    childElement.style.left = `${child.coordinates[ 0 ].getX()}px`;
-                    childElement.style.top = `${child.coordinates[ 0 ].getY()}px`;
+                    childElement.style.left = `${child.getX()}px`;
+                    childElement.style.top = `${child.getY()}px`;
                 }
             }
         } );

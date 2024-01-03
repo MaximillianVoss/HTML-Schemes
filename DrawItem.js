@@ -1,6 +1,17 @@
 import { Point } from './Point.js';
 
 export class DrawItem {
+
+    /**
+     * Создаёт экземпляр DrawItem.
+     * @class
+     * @param {number} id - Уникальный идентификатор элемента.
+     * @param {string} content - Содержимое элемента, может быть другим DrawItem.
+     * @param {DrawItem[]} [children=[]] - Массив дочерних элементов.
+     * @param {Point[]} [coordinates=[]] - Массив координат точек элемента.
+     * @param {number} width - Ширина элемента.
+     * @param {number} height - Высота элемента.
+     */
     constructor( id, content, children, coordinates, width, height ) {
         this.id = id; // Уникальный идентификатор элемента
         this.content = content; // Содержимое элемента, может быть другим DrawItem
@@ -8,7 +19,7 @@ export class DrawItem {
         this.coordinates = []; // Инициализируем пустым массивом
         this.width = width; // Ширина элемента
         this.height = height; // Высота элемента
-
+        this.isDebug = true; // Флаг отладки, true - выводим отладочные сообщения в консоль
         // Установка начальных координат, если они предоставлены
         if ( Array.isArray( coordinates ) ) {
             coordinates.forEach( coord => {
@@ -26,33 +37,62 @@ export class DrawItem {
             console.log( ...args );
     }
 
+    /**
+     * Возвращает координату X первой точки фигуры.
+     * Если массив координат пуст или не существует, возвращает null.
+     * @return {number|null} Координата X или null, если координаты отсутствуют.
+     */
     getX() {
         if ( !this.coordinates || this.coordinates.length == 0 )
             return null;
         return this.coordinates[ 0 ].getX();
     }
+
+    /**
+     * Возвращает координату Y первой точки фигуры.
+     * Если массив координат пуст или не существует, возвращает null.
+     * @return {number|null} Координата Y или null, если координаты отсутствуют.
+     */
     getY() {
         if ( !this.coordinates || this.coordinates.length == 0 )
             return null;
         return this.coordinates[ 0 ].getY();
     }
 
+    /**
+     * Устанавливает координату X для первой точки фигуры.
+     * Если массив координат существует и не пуст, устанавливает переданное значение.
+     * @param {number} x Новое значение координаты X.
+     */
     setX( x ) {
         if ( this.coordinates && this.coordinates.length > 0 )
             this.coordinates[ 0 ].setX( x );
     }
 
+    /**
+     * Устанавливает координату Y для первой точки фигуры.
+     * Если массив координат существует и не пуст, устанавливает переданное значение.
+     * @param {number} y Новое значение координаты Y.
+     */
     setY( y ) {
         if ( this.coordinates && this.coordinates.length > 0 )
             this.coordinates[ 0 ].setY( y );
     }
 
-    // Метод для добавления дочернего элемента
+
+    /**
+     * Добавляет дочерний элемент к текущему элементу.
+     * @param {DrawItem} child Экземпляр элемента, который будет добавлен в качестве потомка.
+     */
     addChild( child ) {
         this.children.push( child );
     }
 
-    // Метод для добавления координаты
+    /**
+     * Добавляет координату к элементу.
+     * Если переданный объект не является экземпляром Point, выводит ошибку в консоль.
+     * @param {Point} point Объект точки, который необходимо добавить к координатам элемента.
+     */
     addCoordinate( point ) {
         if ( point instanceof Point ) {
             this.coordinates.push( point );
@@ -61,20 +101,30 @@ export class DrawItem {
         }
     }
 
-    // Метод для обновления контента
+    /**
+     * Обновляет содержимое элемента новым контентом.
+     * @param {string} newContent Новый контент, который будет установлен элементу.
+     */
     updateContent( newContent ) {
         this.content = newContent;
     }
 
-    // Метод для отрисовки элемента. Предполагается, что он будет переопределен в подклассах.
+    /**
+     * Отрисовывает элемент. Должен быть переопределен в подклассах для конкретной отрисовки.
+     */
     draw() {
-        console.log( 'Drawing an item with id: ' + this.id );
+        this.printToLog( 'Drawing an item with id: ' + this.id );
         this.coordinates.forEach( ( coord, index ) => {
-            console.log( `Coordinate ${index}: x=${coord.getX()}, y=${coord.getY()}` );
+            this.printToLog( `Coordinate ${index}: x=${coord.getX()}, y=${coord.getY()}` );
         } );
     }
 
-    // Метод для проверки, содержит ли элемент точку
+    /**
+     * Проверяет, содержит ли элемент точку с заданными координатами.
+     * @param {number} x Координата X точки для проверки.
+     * @param {number} y Координата Y точки для проверки.
+     * @return {boolean} Возвращает true, если элемент содержит точку, иначе false.
+     */
     containsPoint( x, y ) {
         return (
             x >= this.coordinates[ 0 ].getX() &&
@@ -84,7 +134,11 @@ export class DrawItem {
         );
     }
 
-    // Метод для установки новых координат элемента
+    /**
+     * Устанавливает новые координаты элемента и обновляет их у всех связанных точек.
+     * @param {number} newX Новая координата X элемента.
+     * @param {number} newY Новая координата Y элемента.
+     */
     setCoordinates( newX, newY ) {
         const deltaX = newX - this.coordinates[ 0 ].getX();
         const deltaY = newY - this.coordinates[ 0 ].getY();
@@ -93,4 +147,5 @@ export class DrawItem {
             coord.setY( coord.getY() + deltaY );
         } );
     }
+
 }
