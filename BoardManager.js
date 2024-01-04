@@ -54,20 +54,37 @@ export class BoardManager {
                     return Rectangle.deserialize( itemData );
                 case 'Circle':
                     return Circle.deserialize( itemData );
-                // Добавьте здесь другие типы...
+                case 'Arrow':
+                    // var arrow = Arrow.deserialize( itemData, this.canvas );
+                    // this.createConnection( arrow.coordinates[ 0 ], arrow.coordinates[ 1 ] );
+                    return Arrow.deserialize( itemData, this.canvas );
                 default:
                     return DrawItem.deserialize( itemData );
             }
         } );
 
+
+        for ( var i = 0; i < this.items.length; i++ ) {
+            if ( this.items[ i ] instanceof Arrow ) {
+                var start = this.findNearestPoint( this.items[ i ].coordinates[ 0 ] );
+                var end = this.findNearestPoint( this.items[ i ].coordinates[ 1 ] );
+                this.items[ i ].coordinates[ 0 ] = start;
+                this.items[ i ].coordinates[ 1 ] = end;
+            }
+        }
+
+
         // Восстанавливаем выбранные элементы по их ID
         this.selectedItems = boardState.selectedItems.map( itemId => this.getItemById( itemId ) );
+        // сброс выделенных элементов
+        this.selectedItems = [];
 
         this.nextId = boardState.nextId;
 
         // Перерисовка всех элементов на доске после загрузки
         this.redrawAll();
     }
+
     //#endregion
 
     //#region Геттеры
@@ -130,6 +147,29 @@ export class BoardManager {
             console.error( "No circle found at index: " + index );
             return null;
         }
+    }
+
+    /**
+     * Возвращает массив всех объектов Circle на доске, включая дочерние элементы.
+     * @return {Circle[]} Массив всех Circle.
+     */
+    getAllCircles() {
+        const circles = [];
+        const checkChildren = ( item ) => {
+            // Проверяем, является ли элемент Circle и добавляем его в массив, если да.
+            if ( item instanceof Circle ) {
+                circles.push( item );
+            }
+            // Если у элемента есть дочерние элементы, рекурсивно их проверяем.
+            if ( item.children && item.children.length > 0 ) {
+                item.children.forEach( child => checkChildren( child ) );
+            }
+        };
+
+        // Проходим по всем элементам на доске.
+        this.items.forEach( item => checkChildren( item ) );
+
+        return circles;
     }
     //#endregion
 
@@ -216,6 +256,7 @@ export class BoardManager {
     }
     //#endregion
 
+    //#region Остальные методы
     /**
     * Возвращает первый объект (или его дочерний элемент), содержащий точку с координатами (x, y), или null, если такого объекта нет.
     * @param {number} x Координата X точки для проверки.
@@ -296,12 +337,13 @@ export class BoardManager {
         // Если элемент является Rectangle, удаляем его и все связанные Circle и Arrow
         else if ( item instanceof Rectangle ) {
             // Удаляем сам Rectangle
-            //this.items.splice( itemIndex, 1 );
+            this.items.splice( itemIndex, 1 );
+            item.removeFromDom();
             // Удаление связанных Circle и Arrow
-            item.children.forEach( child => {
-                if ( child instanceof Circle )
-                    this.deleteItem( child.id );
-            } );
+            // item.children.forEach( child => {
+            //     if ( child instanceof Circle )
+            //         this.deleteItem( child.id );
+            // } );
         }
 
         // Обновление списка выбранных элементов
@@ -404,7 +446,7 @@ export class BoardManager {
         let nearestPoint = null;
         let minDistance = radius;
 
-        this.selectedItems.forEach( item => {
+        this.getAllCircles().forEach( item => {
             if ( item instanceof Circle ) {
                 item.coordinates.forEach( coord => {
                     const distance = Point.distance( coord, targetPoint );
@@ -438,4 +480,5 @@ export class BoardManager {
         context.clearRect( 0, 0, this.canvas.width, this.canvas.height );
         this.items.forEach( item => item.draw() );
     }
+    //#endregion
 }

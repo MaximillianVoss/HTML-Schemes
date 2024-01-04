@@ -205,4 +205,22 @@ export class DrawItem {
         } );
     }
 
+    /**
+    * Удаляет элемент и все его дочерние элементы из DOM.
+    */
+    removeFromDom() {
+        // Удаляем сам элемент из DOM
+        const element = document.getElementById( this.id );
+        if ( element ) {
+            element.parentNode.removeChild( element );
+        }
+
+        // Рекурсивно удаляем все дочерние элементы из DOM
+        this.children.forEach( child => {
+            if ( child instanceof DrawItem ) {
+                child.removeFromDom();
+            }
+        } );
+    }
+
 }

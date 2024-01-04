@@ -1,6 +1,6 @@
 import { DrawItem } from './DrawItem.js'; // Импортируйте DrawItem, если он находится в другом файле
 import { Point } from './Point.js';
-
+import { Circle } from './Circle.js';
 export class Rectangle extends DrawItem {
     constructor( id, content, children, coordinates, width, height, text ) {
         super( id, content, children, coordinates, width, height );
@@ -147,5 +147,55 @@ export class Rectangle extends DrawItem {
 
         // Точка не содержится ни в прямоугольнике, ни в его дочерних элементах
         return false;
+    }
+
+    /**
+        * Преобразует экземпляр Rectangle в объект для сериализации.
+        * @return {object} Объект, представляющий Rectangle.
+        */
+    serialize() {
+        return {
+            type: 'Rectangle', // Добавляем тип, чтобы при десериализации знать, какой класс использовать
+            id: this.id,
+            content: this.content, // Это может быть ID другого DrawItem или просто текст
+            children: this.children.map( child => child.serialize() ), // Рекурсивная сериализация дочерних элементов
+            coordinates: this.coordinates.map( coord => coord.serialize() ), // Сериализация координат
+            width: this.width,
+            height: this.height,
+            text: this.text
+            // В этом примере dragging, offsetX и offsetY не сериализуются, так как они, скорее всего, временные и не нужны после перезагрузки
+        };
+    }
+
+
+    /**
+     * Создает новый экземпляр Rectangle из данных JSON.
+     * @param {object} data - Объект с данными для десериализации.
+     * @return {Rectangle} Новый экземпляр Rectangle.
+     */
+    static deserialize( data ) {
+        // Проверяем, что предоставленные данные содержат все необходимые свойства
+        // if ( !data || !data.id || !data.coordinates || !data.width || !data.height || typeof data.text === 'undefined' ) {
+        if ( !data || !data.id || !data.coordinates || !data.width || !data.height ) {
+            throw new Error( "Invalid data for Rectangle deserialization" );
+        }
+
+        // Преобразуем массив координат данных в массив экземпляров Point
+        const points = data.coordinates.map( coord => Point.deserialize( coord ) );
+        const children = data.children.map( child => Circle.deserialize( child ) );
+        // Создаем новый экземпляр Rectangle с данными из объекта
+        var rectangle = new Rectangle( data.id, data.content, children, points, data.width, data.height, data.text );
+        // Для каждой точки создаем Circle и добавляем как дочерний элемент к прямоугольнику
+        // points.forEach( point => {
+        //     const circle = new Circle(
+        //         this.generateUniqueId(),
+        //         "", [], [ point ], 15 // Диаметр окружности 10 пикселей
+        //     );
+        //     rectangle.addChild( circle ); // Добавляем Circle как дочерний элемент к Rectangle
+        //     //rectangle.coordinates.push( point );
+        //     //this.addItem( circle ); // Также добавляем Circle на доску для управления и отрисовки
+
+        // } );
+        return rectangle;
     }
 }

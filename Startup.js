@@ -1,6 +1,6 @@
 window.onload = function () {
-    console.clear();
-    console.log( "Была произведена очистка консоли при запуске" );
+    //console.clear();
+    //console.log( "Была произведена очистка консоли при запуске" );
 }
 
 import { BoardManager } from './BoardManager.js';
@@ -28,6 +28,7 @@ const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол вт�
 
 board.createConnection( point1, point2 );
 board.printToLog( board );
+board.printToLog( board.getAllCircles() );
 // Подождите, пока все элементы будут созданы и добавлены
 
 

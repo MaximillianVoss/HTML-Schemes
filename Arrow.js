@@ -113,4 +113,35 @@ export class Arrow extends DrawItem {
 
         return Math.sqrt( dx * dx + dy * dy );
     }
+
+    /**
+    * Преобразует экземпляр Arrow в объект для сериализации.
+    * @return {object} Объект, представляющий Arrow.
+    */
+    serialize() {
+        return {
+            type: 'Arrow', // Добавляем тип для идентификации при десериализации
+            id: this.id,
+            content: this.content, // Это может быть ID другого DrawItem или просто текст
+            children: this.children.map( child => child.serialize() ), // Рекурсивная сериализация дочерних элементов
+            coordinates: this.coordinates.map( coord => coord.serialize() ) // Сериализация координат
+            // Свойство 'canvas' опущено, так как оно не может быть сериализовано
+        };
+    }
+
+    /**
+     * Создает новый экземпляр Arrow из данных JSON.
+     * @param {object} data - Объект с данными для десериализации.
+     * @param {HTMLCanvasElement} canvasElement - Элемент canvas, к которому будет привязана стрелка.
+     * @return {Arrow} Новый экземпляр Arrow.
+     */
+    static deserialize( data, canvasElement ) {
+        if ( !data || !data.id || !data.coordinates ) {
+            throw new Error( "Invalid data for Arrow deserialization" );
+        }
+        const points = data.coordinates.map( coord => Point.deserialize( coord ) );
+
+        return new Arrow( data.id, data.content, [], points, canvasElement );
+    }
+
 }

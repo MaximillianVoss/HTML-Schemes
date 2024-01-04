@@ -66,8 +66,6 @@ export class Circle extends DrawItem {
         }
     }
 
-
-
     // Метод для обновления текста
     updateText( newText ) {
         this.text = newText;
@@ -94,5 +92,37 @@ export class Circle extends DrawItem {
 
         // Проверяем, находится ли точка в пределах радиуса
         return distance <= this.radius;
+    }
+
+    /**
+     * Преобразует экземпляр Circle в объект для сериализации.
+     * @return {object} Объект, представляющий Circle.
+     */
+    serialize() {
+        return {
+            type: 'Circle', // Добавляем тип для идентификации при десериализации
+            id: this.id,
+            content: this.content, // Это может быть ID другого DrawItem или просто текст
+            children: this.children.map( child => child.serialize() ), // Рекурсивная сериализация дочерних элементов
+            coordinates: this.coordinates.map( coord => coord.serialize() ), // Сериализация координат
+            diameter: this.radius * 2, // Диаметр окружности
+            text: this.text
+        };
+    }
+
+    /**
+     * Создает новый экземпляр Circle из данных JSON.
+     * @param {object} data - Объект с данными для десериализации.
+     * @return {Circle} Новый экземпляр Circle.
+     */
+    static deserialize( data ) {
+        if ( !data || !data.id || !data.coordinates || typeof data.diameter === 'undefined' || typeof data.text === 'undefined' ) {
+            throw new Error( "Invalid data for Circle deserialization" );
+        }
+
+        const points = data.coordinates.map( coord => Point.deserialize( coord ) );
+        const diameter = data.diameter;
+
+        return new Circle( data.id, data.content, [], points, diameter, data.text );
     }
 }
