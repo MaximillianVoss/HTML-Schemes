@@ -28,3 +28,24 @@ canvas {
 .selected {
   border: 3px solid green; /* или любой другой цвет, отличающий выделенные элементы */
 }
+
+.context-menu {
+  position: absolute;
+  z-index: 1000;
+  width: 150px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 2px 2px 5px #cccccc;
+}
+
+.context-menu button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: white;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background-color: #f0f0f0;
+}

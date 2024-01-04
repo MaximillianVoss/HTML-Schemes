@@ -34,4 +34,24 @@ export class Point {
     static distance( point1, point2 ) {
         return Math.sqrt( Math.pow( point2.x - point1.x, 2 ) + Math.pow( point2.y - point1.y, 2 ) );
     }
+
+    /**
+ * Сериализует точку в объект данных.
+ * @return {object} Объект, представляющий точку.
+ */
+    serialize() {
+        return {
+            x: this.x,
+            y: this.y
+        };
+    }
+
+    /**
+     * Воссоздает точку из объекта данных.
+     * @param {object} data Объект, представляющий точку.
+     * @return {Point} Экземпляр Point.
+     */
+    static deserialize( data ) {
+        return new Point( data.x, data.y );
+    }
 }

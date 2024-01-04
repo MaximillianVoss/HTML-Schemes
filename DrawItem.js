@@ -44,6 +44,37 @@ export class DrawItem {
     }
 
     /**
+    * Сериализует элемент в объект данных.
+    * @return {object} Объект, представляющий элемент.
+    */
+    serialize() {
+        return {
+            type: this.constructor.name, // Сохраняем тип объекта
+            id: this.id,
+            content: this.content,
+            children: this.children.map( child => child.serialize() ), // Рекурсивная сериализация дочерних элементов
+            coordinates: this.coordinates.map( coord => coord.serialize() ), // Требует метод serialize в Point
+            width: this.width,
+            height: this.height,
+            isSelected: this.isSelected,
+            isDebug: this.isDebug
+        };
+    }
+
+
+    /**
+     * Воссоздает элемент из объекта данных.
+     * @param {object} data Объект, представляющий элемент.
+     * @return {DrawItem} Экземпляр DrawItem или его наследника.
+     */
+    static deserialize( data ) {
+        const item = new DrawItem( data.id, data.content, [], [], data.width, data.height, data.isDebug );
+        item.isSelected = data.isSelected;
+        item.children = data.children.map( childData => DrawItem.deserialize( childData ) ); // Рекурсивное воссоздание дочерних элементов
+        item.coordinates = data.coordinates.map( coordData => Point.deserialize( coordData ) ); // Воссоздаем точки
+        return item;
+    }
+    /**
      * Обновляет позицию элемента на странице, а также позиции всех дочерних элементов.
      */
     updatePosition() {

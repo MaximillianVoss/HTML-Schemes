@@ -30,25 +30,25 @@ export class Circle extends DrawItem {
 
     // Метод для отрисовки окружности
     draw() {
-        if ( document.getElementById( this.id ) )
-            return;
-        // Создаем элемент div для круга
-        const customCircle = document.createElement( 'div' );
-        // Устанавливаем стиль в зависимости от выделения
-        customCircle.className = this.isSelected ? 'customCircle selected' : 'customCircle';
-        customCircle.id = this.id.toString();
+        let customCircle = document.getElementById( this.id );
 
-        // Устанавливаем стили для круга
-        if ( this.coordinates.length > 0 && this.coordinates[ 0 ] instanceof Point ) {
-            customCircle.style.left = ( this.coordinates[ 0 ].getX() - this.radius ) + 'px';
-            customCircle.style.top = ( this.coordinates[ 0 ].getY() - this.radius ) + 'px';
+        // Если элемент уже существует, обновляем его стили
+        if ( customCircle ) {
+            // Обновляем класс для отражения текущего состояния выделения
+            customCircle.className = this.isSelected ? 'customCircle selected' : 'customCircle';
+        } else {
+            // Если элемент не существует, создаем новый
+            customCircle = document.createElement( 'div' );
+            customCircle.id = this.id.toString();
+            document.body.appendChild( customCircle );
         }
+
+        // Устанавливаем общие стили для новых и существующих элементов
+        customCircle.style.left = this.coordinates.length > 0 ? ( this.coordinates[ 0 ].getX() - this.radius ) + 'px' : '0';
+        customCircle.style.top = this.coordinates.length > 0 ? ( this.coordinates[ 0 ].getY() - this.radius ) + 'px' : '0';
         customCircle.style.width = this.radius * 2 + 'px';
         customCircle.style.height = this.radius * 2 + 'px';
         customCircle.style.borderRadius = '50%'; // Делаем форму круглой
-
-        // Добавляем элемент круга в DOM
-        document.body.appendChild( customCircle );
 
         // Если включен режим отладки, добавляем или обновляем координаты рядом с кругом
         if ( this.isDebug ) {
@@ -67,6 +67,7 @@ export class Circle extends DrawItem {
     }
 
 
+
     // Метод для обновления текста
     updateText( newText ) {
         this.text = newText;
@@ -75,5 +76,23 @@ export class Circle extends DrawItem {
         if ( element ) {
             element.textContent = newText;
         }
+    }
+
+    /**
+     * Проверяет, содержит ли окружность точку с заданными координатами.
+     * @param {number} x Координата X точки для проверки.
+     * @param {number} y Координата Y точки для проверки.
+     * @return {boolean} Возвращает true, если окружность содержит точку, иначе false.
+     */
+    containsPoint( x, y ) {
+        // Координаты центра окружности
+        const centerX = this.coordinates[ 0 ].getX();
+        const centerY = this.coordinates[ 0 ].getY();
+
+        // Вычисляем расстояние от центра окружности до точки
+        const distance = Math.sqrt( Math.pow( x - centerX, 2 ) + Math.pow( y - centerY, 2 ) );
+
+        // Проверяем, находится ли точка в пределах радиуса
+        return distance <= this.radius;
     }
 }

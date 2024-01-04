@@ -9,89 +9,25 @@
 </head>
 
 <body>
+  <div id="contextMenu" class="context-menu" style="display: none;">
+    <button id="deleteItem">Удалить</button>
+  </div>
+
   <!-- <script src="DrawItem.js"></script>
   <script src="Rectangle.js"></script>
   <script src="Circle.js"></script>
   <script src="Arrow.js"></script> -->
   <!-- <script type="module" src="BoardManager.js"></script> -->
-  <button onclick="createNewTextbox()">Создать новый стикер</button>
-  <button onclick="createNewTextbox(500, 300)">Добавить условие задачи</button>
-  <button onclick="addLink()">Добавить связь</button>
-  <button onclick="copyToClipboard(JSON.stringify(createTaskJson()));">Сохранить</button>
-  <button onclick="expandPage()">Расширить</button>
-  <button onclick="loadFromJson(JSON.parse(prompt('Скопируй сюда json с данными')))">Загрузить json данные</button>
+  <button id="btnCreateNewSticker">Создать новый стикер</button>
+  <button id="btnAddTask">Добавить условие задачи</button>
+  <button id="btnAddLink">Добавить связь</button>
+  <button id="btnDelete">Удалить элемент</button>
+  <button id="btnExpandPage">Расширить область схемы</button>
+  <button id="btnSave">Сохранить схему</button>
+  <button id="btnLoad">Загрузить схему</button>
 
-  <canvas id="arrowCanvas" width="1920" height="6000" style="border:1px solid #000;"></canvas>
-  <script src="Startup.js"></script>
-  <script type="module">
-    // let myRectangle = new Rectangle( 1, "", [], [ [ 100, 150 ] ], 200, 100, "Hello, World!" );
-    // myRectangle.draw(); // Создает и отображает прямоугольник с текстом на странице
-    // let myCircle = new Circle( 2, "", [], [ [ 500, 500 ] ], 100 );
-    // myCircle.draw(); // Создает и отображает окружность с текстом на странице
-    // // Создаем объект Arrow
-    // const canvasElement = document.getElementById( 'arrowCanvas' );
-    // if ( canvasElement ) {
-    //   let myArrow = new Arrow( 1, "", [], [ [ 100, 150 ], [ 200, 250 ] ], canvasElement );
-    //   myArrow.draw(); // Отрисовывает стрелку на переданном canvas
-    // } else {
-    //   console.error( "Canvas element not found on the page!" );
-    // }
-
-    import { BoardManager } from './BoardManager.js';
-    import { Point } from './Point.js';
-
-    console.clear();
-    // Предполагается, что у вас есть элемент canvas с id="arrowCanvas" в вашем HTML.
-    const canvasElement = document.getElementById( 'arrowCanvas' );
-
-    const board = new BoardManager( canvasElement );
-
-    // Создаем первый прямоугольник с точками
-    board.createRectangle( 50, 50, 150, 100, "First Rectangle" ); // x, y, width, height
-
-    // Создаем второй прямоугольник с точками
-    board.createRectangle( 300, 200, 150, 100, "Second Rectangle" ); // x, y, width, height
-
-
-    // Получаем прямоугольники из менеджера
-    var rect1 = board.getRectangleByIndex( 0 ); // Первый прямоугольник
-    var rect2 = board.getRectangleByIndex( 1 ); // Второй прямоугольник
-
-    // Создаем связь между выбранными точками
-    const point1 = rect1.coordinates[ 4 ]; // Правый верхний угол первого прямоугольника
-    const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол второго прямоугольника
-
-    board.createConnection( point1, point2 );
-    board.printToLog( board );
-    // Подождите, пока все элементы будут созданы и добавлены
-    document.body.onmousedown = function ( e ) {
-      board.printToLog( "document.body.onmousedown" );
-      var currentElement = board.findItemContainingPoint( e.x, e.y );
-      board.printToLog( currentElement );
-      if ( currentElement ) {
-        board.addSelectedItem( currentElement );
-        board.printToLog( board.selectedItems );
-        board.redrawAll();
-      }
-    }
-    document.body.onmouseup = function () {
-      //board.printToLog( "document.body.onmouseup" );
-      board.redrawAll();
-    }
-    document.body.onmousemove = function () {
-      setTimeout( () => {
-        //board.printToLog( "document.body.onmousemove" );
-        board.redrawAll();
-      }, 20 );
-    }
-
-    function addLink() {
-      board.printToLog( "addLink" );
-    }
-  </script>
-
-
-  <!-- <script src="script.js"></script> -->
+  <canvas id="arrowCanvas" width="1920" height="1080" style="border:1px solid #000;"></canvas>
+  <script type="module" src="Startup.js"></script>
 </body>
 
 </html>

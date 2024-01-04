@@ -50,8 +50,6 @@ export class Rectangle extends DrawItem {
         }
     }
 
-
-
     onMouseUp( e ) {
         this.dragging = false;
     }
@@ -60,6 +58,17 @@ export class Rectangle extends DrawItem {
         if ( this.coordinates.length > 0 && this.coordinates[ 0 ] instanceof Point ) {
             this.setX( x );
             this.setY( y );
+        }
+    }
+
+    selectChild( child ) {
+        if ( child instanceof DrawItem ) {
+            var itemIndex = this.children.findIndex( item => item.id === child.id );
+            if ( itemIndex === -1 ) {
+                console.error( "Элемент для выделения не найден." );
+                return;
+            }
+            this.children[ itemIndex ].isSelected = true;
         }
     }
 
@@ -83,10 +92,10 @@ export class Rectangle extends DrawItem {
         customTextbox.style.height = this.height + 'px';
 
         // Устанавливаем обработчик контекстного меню
-        customTextbox.oncontextmenu = () => {
-            alert( `(<a onclick="scrollToElement('${this.id}');"><i><b>тык</b></i></a>)` );
-            return false; // Предотвращаем открытие стандартного контекстного меню
-        };
+        // customTextbox.oncontextmenu = () => {
+        //     alert( `(<a onclick="scrollToElement('${this.id}');"><i><b>тык</b></i></a>)` );
+        //     return false; // Предотвращаем открытие стандартного контекстного меню
+        // };
 
         // Добавление обработчиков событий для перетаскивания
         customTextbox.addEventListener( 'mousedown', this.onMouseDown.bind( this ) );
@@ -112,5 +121,31 @@ export class Rectangle extends DrawItem {
         }
     }
 
+    /**
+     * Проверяет, содержит ли прямоугольник или его дочерние элементы точку с заданными координатами.
+     * @param {number} x Координата X точки для проверки.
+     * @param {number} y Координата Y точки для проверки.
+     * @return {boolean} Возвращает true, если прямоугольник или один из его дочерних элементов содержит точку, иначе false.
+     */
+    containsPoint( x, y ) {
+        // Проверяем, попадает ли точка в границы прямоугольника
+        if (
+            x >= this.coordinates[ 0 ].getX() &&
+            x <= this.coordinates[ 0 ].getX() + this.width &&
+            y >= this.coordinates[ 0 ].getY() &&
+            y <= this.coordinates[ 0 ].getY() + this.height
+        ) {
+            return true;
+        }
 
+        // Проверяем, содержит ли любой из дочерних элементов точку
+        for ( let child of this.children ) {
+            if ( child instanceof DrawItem && child.containsPoint( x, y ) ) {
+                return true;
+            }
+        }
+
+        // Точка не содержится ни в прямоугольнике, ни в его дочерних элементах
+        return false;
+    }
 }

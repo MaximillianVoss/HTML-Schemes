@@ -19,6 +19,56 @@ export class BoardManager {
             console.log( ...args );
     }
 
+    //#region Загрузка/Сохранение
+    /**
+     * Сериализует текущее состояние доски в JSON.
+     * @return {string} JSON-строка, представляющая состояние доски.
+     */
+    serializeToJson() {
+        const boardState = {
+            isDebug: this.isDebug,
+            // Сериализуем canvas элемент как ID или другой идентификатор, так как нельзя сериализовать DOM элемент напрямую
+            canvasId: this.canvas ? this.canvas.id : null,
+            items: this.items.map( item => item.serialize() ), // Сериализуем каждый элемент
+            selectedItems: this.selectedItems.map( item => item.id ), // Сохраняем только ID выбранных элементов
+            nextId: this.nextId
+        };
+
+        return JSON.stringify( boardState );
+    }
+
+
+    /**
+     * Восстанавливает состояние доски из JSON.
+     * @param {string} json JSON-строка, представляющая состояние доски.
+     */
+    deserializeFromJson( json ) {
+        const boardState = JSON.parse( json );
+        this.isDebug = boardState.isDebug;
+        // Находим и устанавливаем canvas элемент по его ID
+        this.canvas = document.getElementById( boardState.canvasId );
+        this.items = boardState.items.map( itemData => {
+            // Определяем тип элемента и вызываем соответствующий метод deserialize
+            switch ( itemData.type ) {
+                case 'Rectangle':
+                    return Rectangle.deserialize( itemData );
+                case 'Circle':
+                    return Circle.deserialize( itemData );
+                // Добавьте здесь другие типы...
+                default:
+                    return DrawItem.deserialize( itemData );
+            }
+        } );
+
+        // Восстанавливаем выбранные элементы по их ID
+        this.selectedItems = boardState.selectedItems.map( itemId => this.getItemById( itemId ) );
+
+        this.nextId = boardState.nextId;
+
+        // Перерисовка всех элементов на доске после загрузки
+        this.redrawAll();
+    }
+    //#endregion
 
     //#region Геттеры
 
@@ -167,19 +217,49 @@ export class BoardManager {
     //#endregion
 
     /**
-    * Возвращает первый объект, содержащий точку с координатами (x, y), или null, если такого объекта нет.
+    * Возвращает первый объект (или его дочерний элемент), содержащий точку с координатами (x, y), или null, если такого объекта нет.
     * @param {number} x Координата X точки для проверки.
     * @param {number} y Координата Y точки для проверки.
     * @return {DrawItem|null} Найденный объект или null, если объект не найден.
     */
     findItemContainingPoint( x, y ) {
+        // Проверяем каждый элемент на доске
         for ( let item of this.items ) {
-            if ( item.containsPoint( x, y ) ) {
-                return item;
+            //this.printToLog( "findItemContainingPoint", item );
+            const foundItem = this.checkItemAndChildren( item, x, y );
+            if ( foundItem ) {
+                return foundItem;
             }
         }
         return null; // Возвращаем null, если объект не найден
     }
+
+    /**
+    * Рекурсивно проверяет элемент и его дочерние элементы на содержание точки (x, y).
+    * @param {DrawItem} item Элемент для проверки.
+    * @param {number} x Координата X точки для проверки.
+    * @param {number} y Координата Y точки для проверки.
+    * @return {DrawItem|null} Найденный объект или null, если объект не найден.
+    */
+    checkItemAndChildren( item, x, y ) {
+
+        // Проверяем дочерние элементы
+        for ( let child of item.children ) {
+            //this.printToLog( "x:", child.getX(), "y:", child.getY() );
+            if ( child instanceof DrawItem ) {
+                const foundChild = this.checkItemAndChildren( child, x, y );
+                if ( foundChild ) {
+                    return foundChild;
+                }
+            }
+        }
+        // Проверяем сам элемент
+        if ( item.containsPoint( x, y ) ) {
+            return item;
+        }
+        return null; // Ничего не найдено
+    }
+
 
     generateUniqueId() {
         return 'DrawItem_' + this.nextId++;
@@ -193,6 +273,42 @@ export class BoardManager {
         } else {
             console.error( "Item must be an instance of DrawItem" );
         }
+    }
+
+    /**
+     * Удаляет элемент по его ID.
+     * @param {string} id - Уникальный идентификатор элемента для удаления.
+     */
+    deleteItem( id ) {
+        // Находим элемент по ID
+        var itemIndex = this.items.findIndex( item => item.id === id );
+        if ( itemIndex === -1 ) {
+            console.error( "Элемент для удаления не найден." );
+            return;
+        }
+
+        const item = this.items[ itemIndex ];
+
+        // Если элемент является Arrow, просто удаляем его
+        if ( item instanceof Arrow || item instanceof Circle ) {
+            this.items.splice( itemIndex, 1 );
+        }
+        // Если элемент является Rectangle, удаляем его и все связанные Circle и Arrow
+        else if ( item instanceof Rectangle ) {
+            // Удаляем сам Rectangle
+            //this.items.splice( itemIndex, 1 );
+            // Удаление связанных Circle и Arrow
+            item.children.forEach( child => {
+                if ( child instanceof Circle )
+                    this.deleteItem( child.id );
+            } );
+        }
+
+        // Обновление списка выбранных элементов
+        this.selectedItems = this.selectedItems.filter( selected => selected.id !== id );
+
+        // Перерисовка доски
+        this.redrawAll();
     }
 
     createRectangle( x, y, width, height, text ) {
@@ -221,7 +337,7 @@ export class BoardManager {
             );
             rectangle.addChild( circle ); // Добавляем Circle как дочерний элемент к Rectangle
             //rectangle.coordinates.push( point );
-            this.addItem( circle ); // Также добавляем Circle на доску для управления и отрисовки
+            //this.addItem( circle ); // Также добавляем Circle на доску для управления и отрисовки
 
         } );
         this.addItem( rectangle );
@@ -230,9 +346,19 @@ export class BoardManager {
     /**
      * Добавляет элемент в массив выбранных элементов.
      * Если в массиве уже есть два элемента, удаляет первый.
+     * Если элемент с таким же ID уже существует, не добавляет его.
      * @param {DrawItem} item - Элемент для добавления.
      */
     addSelectedItem( item ) {
+        // Проверяем, существует ли уже элемент с таким же ID в массиве выбранных элементов
+        const isAlreadySelected = this.selectedItems.some( selected => selected.id === item.id );
+
+        // Если элемент уже выбран, прекращаем выполнение функции
+        if ( isAlreadySelected ) {
+            this.printToLog( "Элемент с ID", item.id, "уже выбран." );
+            return;
+        }
+
         // Если в массиве уже есть два элемента, удаляем первый и снимаем с него выделение
         if ( this.selectedItems.length >= 2 ) {
             const removedItem = this.selectedItems.shift(); // Удаляем первый элемент
@@ -245,7 +371,6 @@ export class BoardManager {
         this.selectedItems.push( item );
         item.draw(); // Перерисовываем элемент с выделением
     }
-
 
 
     /**
@@ -279,7 +404,7 @@ export class BoardManager {
         let nearestPoint = null;
         let minDistance = radius;
 
-        this.items.forEach( item => {
+        this.selectedItems.forEach( item => {
             if ( item instanceof Circle ) {
                 item.coordinates.forEach( coord => {
                     const distance = Point.distance( coord, targetPoint );
