@@ -8,30 +8,30 @@ import { Point } from './Point.js';
 
 // Предполагается, что у вас есть элемент canvas с id="arrowCanvas" в вашем HTML.
 const canvasElement = document.getElementById( 'arrowCanvas' );
-
 const board = new BoardManager( canvasElement );
 
-// Создаем первый прямоугольник с точками
-board.createRectangle( 50, 50, 150, 100, "First Rectangle" ); // x, y, width, height
+function CreatetestItems() {
+    // Создаем первый прямоугольник с точками
+    board.createRectangle( 50, 50, 150, 100, "First Rectangle" ); // x, y, width, height
 
-// Создаем второй прямоугольник с точками
-board.createRectangle( 300, 200, 150, 100, "Second Rectangle" ); // x, y, width, height
-
-
-// Получаем прямоугольники из менеджера
-var rect1 = board.getRectangleByIndex( 0 ); // Первый прямоугольник
-var rect2 = board.getRectangleByIndex( 1 ); // Второй прямоугольник
-
-// Создаем связь между выбранными точками
-const point1 = rect1.coordinates[ 4 ]; // Правый верхний угол первого прямоугольника
-const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол второго прямоугольника
-
-board.createConnection( point1, point2 );
-board.printToLog( board );
-board.printToLog( board.getAllCircles() );
-// Подождите, пока все элементы будут созданы и добавлены
+    // Создаем второй прямоугольник с точками
+    board.createRectangle( 300, 200, 150, 100, "Second Rectangle" ); // x, y, width, height
 
 
+    // Получаем прямоугольники из менеджера
+    var rect1 = board.getRectangleByIndex( 0 ); // Первый прямоугольник
+    var rect2 = board.getRectangleByIndex( 1 ); // Второй прямоугольник
+
+    // Создаем связь между выбранными точками
+    const point1 = rect1.coordinates[ 4 ]; // Правый верхний угол первого прямоугольника
+    const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол второго прямоугольника
+
+    board.createConnection( point1, point2 );
+    board.printToLog( board );
+    board.printToLog( board.getAllCircles() );
+    // Подождите, пока все элементы будут созданы и добавлены
+}
+//CreatetestItems();
 
 //#region Обработчики нажатий кнопок
 function btnCreateNewSticker_Click() {
