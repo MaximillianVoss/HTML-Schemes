@@ -79,7 +79,7 @@ export class Rectangle extends DrawItem {
         // Создаем элемент div
         const customTextbox = document.createElement( 'div' );
         customTextbox.className = 'customTextbox';
-        customTextbox.contentEditable = true;
+        customTextbox.contentEditable = true; // Позволяет редактировать текст напрямую
         customTextbox.textContent = this.text;
         customTextbox.id = this.id.toString();
 
@@ -91,11 +91,16 @@ export class Rectangle extends DrawItem {
         customTextbox.style.width = this.width + 'px';
         customTextbox.style.height = this.height + 'px';
 
-        // Устанавливаем обработчик контекстного меню
-        // customTextbox.oncontextmenu = () => {
-        //     alert( `(<a onclick="scrollToElement('${this.id}');"><i><b>тык</b></i></a>)` );
-        //     return false; // Предотвращаем открытие стандартного контекстного меню
-        // };
+        // Обработчик контекстного меню (правой кнопки мыши)
+        customTextbox.oncontextmenu = ( event ) => {
+            event.preventDefault(); // Предотвращаем открытие стандартного контекстного меню
+            const newText = prompt( "Введите новый текст для прямоугольника:", this.text ); // Запрашиваем новый текст
+            if ( newText !== null && newText !== this.text ) { // Проверяем, что текст изменился
+                this.text = newText; // Обновляем текст
+                customTextbox.textContent = this.text; // Обновляем отображаемый текст
+            }
+            return false; // Предотвращаем дальнейшее распространение события
+        };
 
         // Добавление обработчиков событий для перетаскивания
         customTextbox.addEventListener( 'mousedown', this.onMouseDown.bind( this ) );
@@ -110,6 +115,7 @@ export class Rectangle extends DrawItem {
             }
         } );
     }
+
 
     // Метод для обновления текста
     updateText( newText ) {
