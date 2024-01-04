@@ -20,16 +20,16 @@ export class Arrow extends DrawItem {
             return;
         }
         const context = this.canvas.getContext( '2d' );
-
+        // Длина головки стрелки
+        const arrowLength = 20;
         // Координаты начала и конца стрелки
         const x1 = this.coordinates[ 0 ].getX();
-        const y1 = this.coordinates[ 0 ].getY();
+        const y1 = this.coordinates[ 0 ].getY() - 2 * arrowLength;
         const x2 = this.coordinates[ 1 ].getX();
-        const y2 = this.coordinates[ 1 ].getY();
+        const y2 = this.coordinates[ 1 ].getY() - 2 * arrowLength;
 
         // Параметры стрелки
         const angle = Math.atan2( y2 - y1, x2 - x1 );
-        const arrowLength = 20; // Длина головки стрелки
         // Рисуем линию стрелки
         context.beginPath();
         context.moveTo( x1, y1 );

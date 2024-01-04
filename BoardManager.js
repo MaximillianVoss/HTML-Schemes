@@ -9,6 +9,8 @@ export class BoardManager {
         this.isDebug = true;
         this.canvas = canvasElement;
         this.items = [];
+        // Массив для хранения текущих выбранных элементов
+        this.selectedItems = [];
         this.nextId = 1;
     }
 
@@ -164,6 +166,20 @@ export class BoardManager {
     }
     //#endregion
 
+    /**
+    * Возвращает первый объект, содержащий точку с координатами (x, y), или null, если такого объекта нет.
+    * @param {number} x Координата X точки для проверки.
+    * @param {number} y Координата Y точки для проверки.
+    * @return {DrawItem|null} Найденный объект или null, если объект не найден.
+    */
+    findItemContainingPoint( x, y ) {
+        for ( let item of this.items ) {
+            if ( item.containsPoint( x, y ) ) {
+                return item;
+            }
+        }
+        return null; // Возвращаем null, если объект не найден
+    }
 
     generateUniqueId() {
         return 'DrawItem_' + this.nextId++;
@@ -193,7 +209,7 @@ export class BoardManager {
 
         const rectangle = new Rectangle(
             this.generateUniqueId(),
-            text, [], points, width, height
+            null, [], points, width, height, text
         );
 
 
@@ -201,7 +217,7 @@ export class BoardManager {
         points.forEach( point => {
             const circle = new Circle(
                 this.generateUniqueId(),
-                "", [], [ point ], 10 // Диаметр окружности 10 пикселей
+                "", [], [ point ], 15 // Диаметр окружности 10 пикселей
             );
             rectangle.addChild( circle ); // Добавляем Circle как дочерний элемент к Rectangle
             //rectangle.coordinates.push( point );
@@ -209,6 +225,41 @@ export class BoardManager {
 
         } );
         this.addItem( rectangle );
+    }
+
+    /**
+     * Добавляет элемент в массив выбранных элементов.
+     * Если в массиве уже есть два элемента, удаляет первый.
+     * @param {DrawItem} item - Элемент для добавления.
+     */
+    addSelectedItem( item ) {
+        // Если в массиве уже есть два элемента, удаляем первый и снимаем с него выделение
+        if ( this.selectedItems.length >= 2 ) {
+            const removedItem = this.selectedItems.shift(); // Удаляем первый элемент
+            removedItem.isSelected = false;
+            removedItem.draw(); // Перерисовываем элемент без выделения
+        }
+
+        // Добавляем новый элемент и устанавливаем выделение
+        item.isSelected = true; // Устанавливаем флаг выделения
+        this.selectedItems.push( item );
+        item.draw(); // Перерисовываем элемент с выделением
+    }
+
+
+
+    /**
+     * Создает соединение между двумя выбранными кругами.
+     */
+    createConnectionFromSelectedItems() {
+        if ( this.selectedItems.length === 2 && this.selectedItems.every( item => item instanceof Circle ) ) {
+            const [ circle1, circle2 ] = this.selectedItems;
+            const point1 = circle1.coordinates[ 0 ]; // Предполагаем, что у круга есть только одна координата
+            const point2 = circle2.coordinates[ 0 ];
+            this.createConnection( point1, point2 );
+        } else {
+            console.error( "Должно быть выбрано ровно два круга для создания соединения" );
+        }
     }
 
     createConnection( point1, point2 ) {

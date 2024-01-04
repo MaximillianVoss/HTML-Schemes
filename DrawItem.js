@@ -12,15 +12,21 @@ export class DrawItem {
      * @param {number} width - Ширина элемента.
      * @param {number} height - Высота элемента.
      */
-    constructor( id, content, children, coordinates, width, height ) {
+    constructor( id, content, children, coordinates, width, height, isDebug ) {
         this.id = id; // Уникальный идентификатор элемента
         this.content = content; // Содержимое элемента, может быть другим DrawItem
         this.children = children || []; // Массив дочерних элементов
         this.coordinates = []; // Инициализируем пустым массивом
         this.width = width; // Ширина элемента
         this.height = height; // Высота элемента
-        this.isDebug = true; // Флаг отладки, true - выводим отладочные сообщения в консоль
+        this.isSelected = false;
+        // Флаг отладки, true - выводим отладочные сообщения в консоль
         // Установка начальных координат, если они предоставлены
+        if ( isDebug )
+            this.isDebug = isDebug;
+        else
+            this.isDebug = false;
+
         if ( Array.isArray( coordinates ) ) {
             coordinates.forEach( coord => {
                 if ( coord instanceof Point ) {
@@ -35,6 +41,24 @@ export class DrawItem {
     printToLog( ...args ) {
         if ( this.isDebug )
             console.log( ...args );
+    }
+
+    /**
+     * Обновляет позицию элемента на странице, а также позиции всех дочерних элементов.
+     */
+    updatePosition() {
+        const element = document.getElementById( this.id );
+        if ( element ) {
+            element.style.left = this.coordinates[ 0 ].getX() + 'px';
+            element.style.top = this.coordinates[ 0 ].getY() + 'px';
+        }
+
+        // Обновляем позиции всех дочерних элементов
+        this.children.forEach( child => {
+            if ( child instanceof DrawItem ) {
+                child.updatePosition();
+            }
+        } );
     }
 
     /**
@@ -60,23 +84,25 @@ export class DrawItem {
     }
 
     /**
-     * Устанавливает координату X для первой точки фигуры.
-     * Если массив координат существует и не пуст, устанавливает переданное значение.
-     * @param {number} x Новое значение координаты X.
-     */
+        * Устанавливает координату X элемента и обновляет его позицию.
+        * @param {number} x - Новое значение координаты X.
+        */
     setX( x ) {
-        if ( this.coordinates && this.coordinates.length > 0 )
+        if ( this.coordinates && this.coordinates.length > 0 ) {
             this.coordinates[ 0 ].setX( x );
+            this.updatePosition(); // Обновляем позицию элемента
+        }
     }
 
     /**
-     * Устанавливает координату Y для первой точки фигуры.
-     * Если массив координат существует и не пуст, устанавливает переданное значение.
-     * @param {number} y Новое значение координаты Y.
+     * Устанавливает координату Y элемента и обновляет его позицию.
+     * @param {number} y - Новое значение координаты Y.
      */
     setY( y ) {
-        if ( this.coordinates && this.coordinates.length > 0 )
+        if ( this.coordinates && this.coordinates.length > 0 ) {
             this.coordinates[ 0 ].setY( y );
+            this.updatePosition(); // Обновляем позицию элемента
+        }
     }
 
 

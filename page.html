@@ -43,32 +43,51 @@
     console.clear();
     // Предполагается, что у вас есть элемент canvas с id="arrowCanvas" в вашем HTML.
     const canvasElement = document.getElementById( 'arrowCanvas' );
+
     const board = new BoardManager( canvasElement );
 
     // Создаем первый прямоугольник с точками
     board.createRectangle( 50, 50, 150, 100, "First Rectangle" ); // x, y, width, height
 
     // Создаем второй прямоугольник с точками
-    //board.createRectangle( 300, 200, 150, 100, "Second Rectangle" ); // x, y, width, height
+    board.createRectangle( 300, 200, 150, 100, "Second Rectangle" ); // x, y, width, height
 
 
     // Получаем прямоугольники из менеджера
     var rect1 = board.getRectangleByIndex( 0 ); // Первый прямоугольник
-    //var rect2 = board.getRectangleByIndex( 1 ); // Второй прямоугольник
+    var rect2 = board.getRectangleByIndex( 1 ); // Второй прямоугольник
 
     // Создаем связь между выбранными точками
-    //const point1 = rect1.coordinates[ 4 ]; // Правый верхний угол первого прямоугольника
-    //const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол второго прямоугольника
+    const point1 = rect1.coordinates[ 4 ]; // Правый верхний угол первого прямоугольника
+    const point2 = rect2.coordinates[ 0 ]; // Левый нижний угол второго прямоугольника
 
-    //board.createConnection( point1, point2 );
-    
+    board.createConnection( point1, point2 );
+    board.printToLog( board );
     // Подождите, пока все элементы будут созданы и добавлены
-    // setTimeout( () => {
-    //   board.redrawAll();
-    //   //board.enableDragging();
+    document.body.onmousedown = function ( e ) {
+      board.printToLog( "document.body.onmousedown" );
+      var currentElement = board.findItemContainingPoint( e.x, e.y );
+      board.printToLog( currentElement );
+      if ( currentElement ) {
+        board.addSelectedItem( currentElement );
+        board.printToLog( board.selectedItems );
+        board.redrawAll();
+      }
+    }
+    document.body.onmouseup = function () {
+      //board.printToLog( "document.body.onmouseup" );
+      board.redrawAll();
+    }
+    document.body.onmousemove = function () {
+      setTimeout( () => {
+        //board.printToLog( "document.body.onmousemove" );
+        board.redrawAll();
+      }, 20 );
+    }
 
-    // }, 1000 );
-
+    function addLink() {
+      board.printToLog( "addLink" );
+    }
   </script>
 
 

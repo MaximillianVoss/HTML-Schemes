@@ -21,27 +21,35 @@ export class Rectangle extends DrawItem {
         if ( this.dragging ) {
             const x = e.clientX - this.offsetX;
             const y = e.clientY - this.offsetY;
-            const deltaX = x - this.coordinates[ 0 ].getX(); // Разница по X
-            const deltaY = y - this.coordinates[ 0 ].getY(); // Разница по Y
-            this.printToLog( e.clientX, e.clientY );
+            //this.printToLog( e.clientX, e.clientY );
             this.setCoordinates( x, y );
-            this.updatePosition();
 
-            // Обновляем координаты всех дочерних элементов
-            this.children.forEach( child => {
-                if ( child instanceof DrawItem ) {
-                    // Предполагается, что у точек есть методы setX и setY
-                    //this.printToLog( child.getX(), child.getY() );
-                    child.setX( child.getX() + deltaX );
-                    child.setY( child.getY() + deltaY );
-                }
-                // Добавьте здесь дополнительную логику, если у вас есть другие типы дочерних элементов
-            } );
+            // Предполагается, что children содержат ровно 8 точек
+            if ( this.children.length === 8 ) {
+                // Здесь мы должны обновить координаты всех восьми точек
+                const points = [
+                    new Point( x, y ),
+                    new Point( x + this.width / 2, y ),
+                    new Point( x + this.width, y ),
+                    new Point( x + this.width, y + this.height / 2 ),
+                    new Point( x + this.width, y + this.height ),
+                    new Point( x + this.width / 2, y + this.height ),
+                    new Point( x, y + this.height ),
+                    new Point( x, y + this.height / 2 )
+                ];
 
-            // Обновляем позицию дочерних элементов в DOM
-            this.updateChildrenPosition();
+                this.children.forEach( ( child, index ) => {
+                    if ( child instanceof DrawItem ) {
+                        // Переопределяем координаты каждой точки
+                        child.setCoordinates( points[ index ].getX(), points[ index ].getY() );
+                        // Обновляем позицию точки
+                        child.updatePosition();
+                    }
+                } );
+            }
         }
     }
+
 
 
     onMouseUp( e ) {
@@ -50,16 +58,8 @@ export class Rectangle extends DrawItem {
 
     setCoordinates( x, y ) {
         if ( this.coordinates.length > 0 && this.coordinates[ 0 ] instanceof Point ) {
-            this.coordinates[ 0 ].setX( x );
-            this.coordinates[ 0 ].setY( y );
-        }
-    }
-
-    updatePosition() {
-        const element = document.getElementById( this.id.toString() );
-        if ( element ) {
-            element.style.left = `${this.coordinates[ 0 ].getX()}px`;
-            element.style.top = `${this.coordinates[ 0 ].getY()}px`;
+            this.setX( x );
+            this.setY( y );
         }
     }
 
@@ -112,16 +112,5 @@ export class Rectangle extends DrawItem {
         }
     }
 
-    updateChildrenPosition() {
-        this.children.forEach( child => {
-            if ( child instanceof DrawItem ) {
-                const childElement = document.getElementById( child.id.toString() );
-                if ( childElement ) {
-                    childElement.style.left = `${child.getX()}px`;
-                    childElement.style.top = `${child.getY()}px`;
-                }
-            }
-        } );
-    }
 
 }
